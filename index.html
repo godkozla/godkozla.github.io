@@ -3,26 +3,33 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes" />
-  <title>.lottie responsive (intrinsic ratio)</title>
+  <title>.lottie fit-width</title>
   <style>
-    :root { --bg: #fff; } /* фон страницы при желании меняй */
+    :root { --bg: #ffffff; } /* фон страницы по желанию */
 
     html, body {
       height: 100%;
       margin: 0;
       background: var(--bg);
     }
+
+    /* Центрируем по центру-центру */
     .viewport {
       min-height: 100dvh;
-      width: 100%;
       display: flex;
-      align-items: center;      /* центр по вертикали */
-      justify-content: center;  /* центр по горизонтали */
-      overflow: hidden;
-      touch-action: manipulation; /* не блокируй жесты */
+      align-items: center;
+      justify-content: center;
+      overflow: auto;            /* если высота будет больше экрана — можно проскроллить */
+      touch-action: manipulation;
     }
-    /* Размеры .lottie-box задаём из JS, чтобы точно вписать по экрану */
-    .lottie-box { position: relative; }
+
+    /* Контейнер: ширина = ширина экрана всегда */
+    .lottie-box {
+      position: relative;
+      width: 100vw;              /* ← ЖЁСТКО по ширине */
+      /* height зададим из JS исходя из ratio */
+    }
+
     canvas {
       position: absolute;
       inset: 0;
@@ -45,68 +52,54 @@
     const box = document.getElementById('box');
     const canvas = document.getElementById('canvas');
 
-    // Инициализация плеера
     const player = new DotLottie({
       canvas,
       src: "./animation.lottie",
       autoplay: true,
       loop: true,
-      renderer: "canvas" // можно "svg" при необходимости
+      renderer: "canvas"
     });
 
-    // Текущее соотношение сторон (по умолчанию 1:1, пока не узнаем истинное)
-    let ratio = 1;
+    let ratio = 1; // w/h из анимации
 
-    // Пытаемся получить исходные w/h из анимации
-    async function updateIntrinsicRatio() {
+    async function getIntrinsicRatio() {
       try {
-        const data = await player.getAnimationData?.(); // у dotlottie-web это лотти-JSON
-        if (data?.w && data?.h) {
-          ratio = data.w / data.h;
-        }
-      } catch (_) {
-        // нет метода или нет данных — оставим ratio=1
-      }
+        const data = await player.getAnimationData?.();
+        if (data?.w && data?.h) ratio = data.w / data.h;
+      } catch {}
     }
 
-    // Вписывание: сначала по ширине, если не помещается — по высоте
     function layout() {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
+      const vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
 
-      // по ширине
-      const hByWidth = vw / ratio;
-      let drawW, drawH;
-      if (hByWidth <= vh) {
-        drawW = vw;
-        drawH = hByWidth;
-      } else {
-        // иначе по высоте
-        drawH = vh;
-        drawW = vh * ratio;
-      }
+      // ширина = 100vw, высота = width / ratio
+      const drawW = vw;
+      const drawH = vw / ratio;
 
-      // CSS-размер контейнера (в CSS-пикселях)
-      box.style.width = `${Math.round(drawW)}px`;
+      box.style.width  = `${Math.round(drawW)}px`;
       box.style.height = `${Math.round(drawH)}px`;
 
-      // Реальный размер канваса (в device-pixels), чтобы не было блюра
+      // подгоняем реальное разрешение канваса под DPR
       const dpr = window.devicePixelRatio || 1;
       canvas.width  = Math.max(1, Math.round(drawW * dpr));
       canvas.height = Math.max(1, Math.round(drawH * dpr));
     }
 
-    // Обновляем при изменении экрана/ориентации
-    window.addEventListener('resize', layout);
-    window.addEventListener('orientationchange', layout);
+    // из-за адресной строки на мобилках используем VisualViewport, если есть
+    const onResize = () => requestAnimationFrame(layout);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', onResize);
+      window.visualViewport.addEventListener('scroll', onResize);
+    } else {
+      window.addEventListener('resize', onResize);
+      window.addEventListener('orientationchange', onResize);
+    }
 
-    // Последовательность: узнаём ratio → раскладываем
     (async () => {
-      await updateIntrinsicRatio();
+      await getIntrinsicRatio();
       layout();
     })();
 
-    // Дополнительно перелагаем при готовности анимации (на всякий случай)
     player.addEventListener('ready', layout);
   </script>
 </body>
