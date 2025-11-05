@@ -5,33 +5,84 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>.lottie demo</title>
 
-  <!-- dotLottie web-component (CDN) -->
-  <script type="module" src="https://unpkg.com/@dotlottie/player/dist/dotlottie-player.mjs"></script>
+  <!-- локальная копия плеера -->
+  <script type="module" src="./dotlottie-player.js"></script>
 
   <style>
-    html,body { height:100%; margin:0; background:#000; }
-    .wrap { display:flex; align-items:center; justify-content:center; height:100%; padding:16px; }
-    /* Контейнер ограничиваем, чтобы на телефоне не «улетало» за края */
-    dotlottie-player { width:100%; max-width:480px; height:auto; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #000; /* можно заменить на transparent */
+    }
+    .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+    dotlottie-player {
+      width: 100%;
+      max-width: 480px;
+      height: auto;
+    }
+    button {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #e63946;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 16px;
+      cursor: pointer;
+    }
   </style>
 </head>
+
 <body>
   <div class="wrap">
+    <!-- Основной плеер -->
     <dotlottie-player
+      id="player"
       src="./animation.lottie"
       autoplay
       loop
       background="transparent"
-      renderer="svg"   <!-- можно "canvas" для тяжёлых сцен -->
-      speed="1">
+      speed="1"
+      renderer="svg">
     </dotlottie-player>
   </div>
 
-  <!-- Примеры управления, если понадобится:
-  <script>
-    const player = document.querySelector('dotlottie-player');
-    // player.pause(); player.play(); player.setSpeed(1.5);
+  <!-- Кнопка для проверки управления -->
+  <button id="toggle">⏯ Пуск / Пауза</button>
+
+  <!-- Скрипт управления -->
+  <script type="module">
+    // Инициализация плеера
+    const player = document.getElementById('player');
+    const toggle = document.getElementById('toggle');
+
+    // Кнопка play/pause
+    toggle.addEventListener('click', () => {
+      if (player.paused) {
+        player.play();
+      } else {
+        player.pause();
+      }
+    });
+
+    // Можно также управлять скоростью:
+    // player.speed = 1.5;
+
+    // Или перейти к определённому моменту (в процентах):
+    // player.seek(0.5); // середина
+
+    // Отладка загрузки
+    player.addEventListener('ready', () => {
+      console.log('Lottie готова к воспроизведению');
+    });
   </script>
-  -->
 </body>
 </html>
