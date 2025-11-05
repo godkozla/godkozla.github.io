@@ -2,67 +2,68 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>.lottie demo (API)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>.lottie mobile responsive demo</title>
   <style>
     html, body {
       height: 100%;
       margin: 0;
-      background: #fff;
+      background: #10131a; /* ← поменяй на нужный фон */
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    canvas {
-      width: 320px;
-      height: 320px;
+
+    /* Контейнер для сохранения пропорций */
+    .lottie-container {
+      width: 100vw;               /* ширина экрана */
+      max-width: 480px;           /* ограничение (опционально) */
+      aspect-ratio: 1 / 1;        /* задай нужное соотношение, например 16/9 */
+      position: relative;
     }
-    button {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #e63946;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
-      font-size: 16px;
-      cursor: pointer;
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
   </style>
 </head>
 <body>
-  <canvas id="canvas" width="480" height="480"></canvas>
-  <button id="toggle">⏯ Пуск / Пауза</button>
+  <div class="lottie-container">
+    <canvas id="canvas"></canvas>
+  </div>
 
   <script type="module">
-    // Импорт плеера напрямую с CDN (модуль ESM)
     import { DotLottie } from "https://cdn.jsdelivr.net/npm/@lottiefiles/dotlottie-web/+esm";
 
-    // Инициализация
+    const canvas = document.getElementById("canvas");
+    const container = document.querySelector(".lottie-container");
+
     const player = new DotLottie({
-      canvas: document.getElementById("canvas"),
-      src: "./animation.lottie",   // путь к твоему файлу
+      canvas,
+      src: "./animation.lottie",
       autoplay: true,
       loop: true,
-      renderer: "canvas"           // по умолчанию canvas; можно "svg"
+      renderer: "canvas"
     });
 
-    // Управление (кнопка play/pause)
-    const toggle = document.getElementById("toggle");
-    toggle.addEventListener("click", async () => {
-      const state = await player.getState();
-      if (state === "playing") {
-        player.pause();
-      } else {
-        player.play();
-      }
-    });
+    // Масштабируем пропорционально контейнеру
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = container.getBoundingClientRect();
 
-    // Для отладки:
-    player.addEventListener("ready", () => console.log("Lottie готова"));
-    player.addEventListener("error", e => console.error("Ошибка:", e));
+      canvas.width  = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    player.addEventListener("ready", () => {
+      console.log("Lottie готова");
+      resizeCanvas(); // чтобы сразу правильно подстроилась
+    });
   </script>
 </body>
 </html>
