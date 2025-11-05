@@ -3,35 +3,27 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>.lottie demo</title>
-
-  <!-- локальная копия плеера -->
-  <script type="module" src="./dotlottie-player.js"></script>
-
+  <title>.lottie demo (API)</title>
   <style>
     html, body {
       height: 100%;
       margin: 0;
-      background: #000; /* можно заменить на transparent */
-    }
-    .wrap {
+      background: #000;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100%;
     }
-    dotlottie-player {
-      width: 100%;
-      max-width: 480px;
-      height: auto;
+    canvas {
+      width: 320px;
+      height: 320px;
     }
     button {
       position: fixed;
-      bottom: 20px;
+      bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
       background: #e63946;
-      color: #fff;
+      color: white;
       border: none;
       border-radius: 8px;
       padding: 10px 18px;
@@ -40,49 +32,37 @@
     }
   </style>
 </head>
-
 <body>
-  <div class="wrap">
-    <!-- Основной плеер -->
-    <dotlottie-player
-      id="player"
-      src="./animation.lottie"
-      autoplay
-      loop
-      background="transparent"
-      speed="1"
-      renderer="svg">
-    </dotlottie-player>
-  </div>
-
-  <!-- Кнопка для проверки управления -->
+  <canvas id="canvas" width="480" height="480"></canvas>
   <button id="toggle">⏯ Пуск / Пауза</button>
 
-  <!-- Скрипт управления -->
   <script type="module">
-    // Инициализация плеера
-    const player = document.getElementById('player');
-    const toggle = document.getElementById('toggle');
+    // Импорт плеера напрямую с CDN (модуль ESM)
+    import { DotLottie } from "https://cdn.jsdelivr.net/npm/@lottiefiles/dotlottie-web/+esm";
 
-    // Кнопка play/pause
-    toggle.addEventListener('click', () => {
-      if (player.paused) {
-        player.play();
-      } else {
+    // Инициализация
+    const player = new DotLottie({
+      canvas: document.getElementById("canvas"),
+      src: "./animation.lottie",   // путь к твоему файлу
+      autoplay: true,
+      loop: true,
+      renderer: "canvas"           // по умолчанию canvas; можно "svg"
+    });
+
+    // Управление (кнопка play/pause)
+    const toggle = document.getElementById("toggle");
+    toggle.addEventListener("click", async () => {
+      const state = await player.getState();
+      if (state === "playing") {
         player.pause();
+      } else {
+        player.play();
       }
     });
 
-    // Можно также управлять скоростью:
-    // player.speed = 1.5;
-
-    // Или перейти к определённому моменту (в процентах):
-    // player.seek(0.5); // середина
-
-    // Отладка загрузки
-    player.addEventListener('ready', () => {
-      console.log('Lottie готова к воспроизведению');
-    });
+    // Для отладки:
+    player.addEventListener("ready", () => console.log("Lottie готова"));
+    player.addEventListener("error", e => console.error("Ошибка:", e));
   </script>
 </body>
 </html>
