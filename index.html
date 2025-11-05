@@ -2,27 +2,32 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>.lottie mobile responsive demo</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, user-scalable=yes"
+  />
+  <title>.lottie responsive</title>
   <style>
+    :root { --bg: #fff; --ratio: 1 / 1; } /* поменяй ratio на 16/9, 9/16 и т.п. */
+
     html, body {
       height: 100%;
       margin: 0;
-      background: #10131a; /* ← поменяй на нужный фон */
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: var(--bg);
     }
 
-    /* Контейнер для сохранения пропорций */
+    /* Контейнер растягивается на всю ширину экрана и держит пропорции */
     .lottie-container {
-      width: 100vw;               /* ширина экрана */
-      max-width: 480px;           /* ограничение (опционально) */
-      aspect-ratio: 1 / 1;        /* задай нужное соотношение, например 16/9 */
+      width: 100vw;
+      aspect-ratio: var(--ratio);
       position: relative;
+      margin: 0 auto;           /* центр по горизонтали */
+      touch-action: manipulation;/* не блокируем жесты */
     }
 
     canvas {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       display: block;
@@ -37,33 +42,33 @@
   <script type="module">
     import { DotLottie } from "https://cdn.jsdelivr.net/npm/@lottiefiles/dotlottie-web/+esm";
 
-    const canvas = document.getElementById("canvas");
     const container = document.querySelector(".lottie-container");
+    const canvas = document.getElementById("canvas");
 
+    // Инициализация плеера
     const player = new DotLottie({
       canvas,
       src: "./animation.lottie",
       autoplay: true,
       loop: true,
-      renderer: "canvas"
+      renderer: "canvas" // можно "svg", если нужно
     });
 
-    // Масштабируем пропорционально контейнеру
-    function resizeCanvas() {
+    // Функция подгонки под контейнер с учётом DPR (чтобы не было мыла)
+    function fitToContainer() {
       const dpr = window.devicePixelRatio || 1;
       const rect = container.getBoundingClientRect();
-
-      canvas.width  = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+      canvas.width  = Math.max(1, Math.round(rect.width  * dpr));
+      canvas.height = Math.max(1, Math.round(rect.height * dpr));
     }
 
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
+    // Следим за любыми изменениями размеров контейнера (ориентация, UI-бары, адресная строка и т.д.)
+    const ro = new ResizeObserver(fitToContainer);
+    ro.observe(container);
 
-    player.addEventListener("ready", () => {
-      console.log("Lottie готова");
-      resizeCanvas(); // чтобы сразу правильно подстроилась
-    });
+    // На старте и после готовности тоже синхронизируем
+    fitToContainer();
+    player.addEventListener("ready", fitToContainer);
   </script>
 </body>
 </html>
