@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>.lottie demo</title>
+
+  <!-- dotLottie web-component (CDN) -->
+  <script type="module" src="https://unpkg.com/@dotlottie/player/dist/dotlottie-player.mjs"></script>
+
+  <style>
+    html,body { height:100%; margin:0; background:#000; }
+    .wrap { display:flex; align-items:center; justify-content:center; height:100%; padding:16px; }
+    /* Контейнер ограничиваем, чтобы на телефоне не «улетало» за края */
+    dotlottie-player { width:100%; max-width:480px; height:auto; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <dotlottie-player
+      src="./animation.lottie"
+      autoplay
+      loop
+      background="transparent"
+      renderer="svg"   <!-- можно "canvas" для тяжёлых сцен -->
+      speed="1">
+    </dotlottie-player>
+  </div>
+
+  <!-- Примеры управления, если понадобится:
+  <script>
+    const player = document.querySelector('dotlottie-player');
+    // player.pause(); player.play(); player.setSpeed(1.5);
+  </script>
+  -->
+</body>
+</html>
